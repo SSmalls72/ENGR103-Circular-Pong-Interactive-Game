@@ -1,25 +1,32 @@
 //Author: Sinjin Small
-//ENGR 103 Final Game
+//ENGR 103 Final Game: Circular Pong
 //PROF. Udell
 
 #include <Adafruit_CircuitPlayground.h>
 #include <AsyncDelay.h> 
 
-
+//Declaring Variables
 int score = 0;
 int buttonStatus;
 int switchState;
 
+//Declaring Timers
 AsyncDelay delay_fastLightCycle;
 AsyncDelay delay_slowLightCycle;
 
 
 void setup() {
   // put your setup code here, to run once:
+  //General Setup
+
   Serial.begin(9600);
   CircuitPlayground.begin();
+
+  //Pin Setup
   pinMode(5, INPUT_PULLDOWN);
-  pinMode(7, INPUT);
+  pinMode(7, INPUT_PULLUP);
+
+  //Timer Setup
   delay_fastLightCycle.start(2700, AsyncDelay::MILLIS);
   delay_slowLightCycle.start(4500, AsyncDelay::MILLIS);
 }
@@ -27,13 +34,15 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+//Turn goal light on
   CircuitPlayground.setPixelColor(2, 0, 255, 0);
   
   
+//Create direction variable 
   int direction;
   direction = score % 2;
   
-
+//Use direction variable to determine the direction of light flow
   if(direction == 0) {
     lightRotateRight();
   }
@@ -41,13 +50,13 @@ void loop() {
     lightRotateLeft();
   }
 
+//Read switch state and set to a variable
   switchState = digitalRead(7);
 
-
+//Use switch state to determine speed of light
 if (switchState) {
   if (delay_slowLightCycle.isExpired()) { 
      buttonStatus = digitalRead(5);
-     Serial.println(buttonStatus);
      if (buttonStatus){
        CircuitPlayground.playTone(1000, 100);
         score++;
@@ -61,7 +70,6 @@ if (switchState) {
 else{
   if (delay_fastLightCycle.isExpired()) { 
       buttonStatus = digitalRead(5);
-      Serial.println(buttonStatus);
       if (buttonStatus){
         CircuitPlayground.playTone(1000, 100);
         score++;
@@ -74,7 +82,8 @@ else{
 }
 
 
-if(score == 10) {
+//End game function 
+if(score == 5) {
   CircuitPlayground.clearPixels();
 
   for (int i = 0; i < 10; i++) {
@@ -83,25 +92,38 @@ if(score == 10) {
   }
 }
 
+Serial.print("Switch State:"); Serial.println(switchState);
+
 }
 
 
-
+//Function that triggers the light change
 int lightChange(int lightNum, bool speed) {
   if(speed) {
-  CircuitPlayground.setPixelColor(lightNum, 255, 255, 255);
+  
+    for(int i = 0; i < 255; i++){
+      CircuitPlayground.setPixelColor(lightNum, i, i, i);
+    }
+
   delay(50);
-  CircuitPlayground.setPixelColor(lightNum, 0, 0, 0);
+    for(int i = 255; i > 0; i--){
+      CircuitPlayground.setPixelColor(lightNum, i, i, i);
+    }
   delay(250);
   }
   else {
-  CircuitPlayground.setPixelColor(lightNum, 255, 255, 255);
+    for(int i = 0; i < 255; i++){
+      CircuitPlayground.setPixelColor(lightNum, i, i, i);
+    }
   delay(250);
-  CircuitPlayground.setPixelColor(lightNum, 0, 0, 0);
+    for(int i = 255; i > 0; i--){
+      CircuitPlayground.setPixelColor(lightNum, i, i, i);
+    }
   delay(250);
   }
 }
 
+//Function for light rotation right
 void lightRotateRight() {
 
   switchState = digitalRead(7);
@@ -118,6 +140,7 @@ void lightRotateRight() {
 
 }
 
+//Function for light rotation left
 void lightRotateLeft() {
 
   switchState = digitalRead(7);
